@@ -21,19 +21,6 @@ Un réseau social géolocalisé dédié aux sportifs. L'application permet aux a
 Ce projet utilise une architecture Full-Stack JavaScript couplée à un Backend-as-a-Service (BaaS) pour une gestion optimale de la base de données relationnelle et des requêtes géospatiales.
 
 *   **Frontend :** React (via Vite), HTML, CSS, JavaScript
-*   **Encapsulation Mobile :** Capacitor / Ionic (prêt pour un déploiement cross-platform iOS/Android)
 *   **Backend & Base de données :** Supabase (PostgreSQL)
 *   **Géolocalisation :** Extension PostGIS (PostgreSQL) pour le calcul précis des distances.
 
-## ⚙️ Installation et Configuration Locale
-
-### Prérequis
-*   [Node.js](https://nodejs.org/) (version 18 ou supérieure)
-*   Un compte [Supabase](https://supabase.com/) avec un projet configuré.
-
-### Étapes d'installation
-
-1. **Cloner le dépôt**
-   ```bash
-   git clone [https://github.com/votre-nom-d-utilisateur/sportsync.git](https://github.com/votre-nom-d-utilisateur/sportsync.git)
-   cd sportsync
