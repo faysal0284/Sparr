@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sparr — Sessions sportives</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-logo">⚡</span>
+      <span class="brand-name">Sparr</span>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- Formulaire de création / modification d'un événement -->
+    <section class="section">
+      <h1 id="form-titre">Créer une session</h1>
+      <form id="form-evenement" class="form-card" novalidate>
+        <input type="hidden" id="evt-id" />
+        <label>Titre
+          <input type="text" id="evt-titre" placeholder="Footing matinal" />
+        </label>
+        <label>Sport
+          <select id="evt-sport">
+            <option value="">— Choisir —</option>
+            <option>Course</option>
+            <option>Football</option>
+            <option>Tennis</option>
+            <option>Basket</option>
+            <option>Cyclisme</option>
+            <option>Musculation</option>
+          </select>
+        </label>
+        <label>Lieu (ville)
+          <input type="text" id="evt-lieu" placeholder="Paris" />
+        </label>
+        <label>Date
+          <input type="date" id="evt-date" />
+        </label>
+        <label>Places disponibles
+          <input type="number" id="evt-places" min="1" value="4" />
+        </label>
+        <div class="form-errors" id="err-evenement"></div>
+        <div class="card-actions">
+          <button type="submit" class="btn btn-primary" id="btn-submit">Publier la session</button>
+          <button type="button" class="btn btn-ghost hidden" id="btn-annuler">Annuler</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Liste des événements existants -->
+    <section class="section">
+      <h1>Mes sessions</h1>
+      <div id="liste-evenements" class="cards-grid"></div>
+    </section>
+
+  </main>
+
+  <!-- Scripts : validation d'abord, puis logique métier, puis app -->
+  <script src="js/validation.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+
+<!--
+  ============================================================================
+  FICHIER : index.html
+  RÔLE    : Structure de la maquette "Sparr", limitée à la gestion des sessions
+            sportives (créer, modifier, supprimer un événement).
+  CONTENU :
+    - Un en-tête simple avec le logo Sparr.
+    - Un formulaire unique servant à la fois à la création et à la modification
+      d'un événement (le champ caché evt-id distingue les deux modes) avec un
+      bouton "Annuler" affiché uniquement en mode édition.
+    - Une liste (#liste-evenements) où js/app.js injecte les cartes, chacune
+      dotée de boutons Modifier et Supprimer.
+    - Scripts chargés dans l'ordre validation -> events -> app.
+  PLACE DANS LE PROJET : point d'entrée HTML reliant le CSS et les 3 scripts.
+  ============================================================================
+-->
 
