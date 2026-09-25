@@ -39,8 +39,10 @@ function modifierEvenement(id, data) {
   });
   return evt;
 }
-
-
-
-
-
+// Supprime un événement existant (par id).
+function supprimerEvenement(id) {
+  const index = evenements.findIndex(e => e.id === Number(id));
+  if (index === -1) return false;
+  evenements.splice(index, 1);
+  return true;
+}
