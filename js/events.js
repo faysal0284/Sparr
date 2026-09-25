@@ -1,138 +1,87 @@
-import React, { useState } from 'react';
+// events.js — gestion des événements/sessions sportives (backend simulé).
+// Les données vivent dans un simple tableau JS ; aucune persistance réelle.
 
-export default function CreateEventForm() {
-  const [formData, setFormData] = useState({
-    sport: '',
-    minPlayers: 1,
-    maxPlayers: 2,
-    location: '',
-    level: '',
-    distance: ''
+let evenements = [
+  { id: 1, titre: "Footing du dimanche", sport: "Course", lieu: "Lyon", date: "2026-10-04", places: 3, participe: false },
+  { id: 2, titre: "Match 5v5", sport: "Football", lieu: "Paris", date: "2026-10-02", places: 2, participe: false },
+  { id: 3, titre: "Tournoi amical", sport: "Tennis", lieu: "Lyon", date: "2026-10-10", places: 4, participe: false },
+  { id: 4, titre: "Sortie vélo côtière", sport: "Cyclisme", lieu: "Nice", date: "2026-10-06", places: 6, participe: false }
+];
+
+let prochainId = 5;
+
+// Recherche géolocalisée simulée : filtre par ville. Un rayon "100" = partout.
+function rechercherEvenements(ville, rayon) {
+  const v = (ville || "").trim().toLowerCase();
+  return evenements.filter(e => {
+    if (Number(rayon) >= 100) return true;      // "Partout"
+    if (!v) return true;                          // pas de ville => tout afficher
+    return e.lieu.toLowerCase().includes(v);      // proximité simulée par ville
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Données de l'événement créées :", formData);
-    // Ici, appel à l'API (ex: Supabase) pour sauvegarder la session
-  };
-
-  return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-gray-900 rounded-lg shadow-xl text-white">
-      <h2 className="text-2xl font-bold mb-6">Créer un événement sportif</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        
-        {/* Menu de sélection du sport */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Sport *</label>
-          <select 
-            name="sport" 
-            value={formData.sport} 
-            onChange={handleChange} 
-            required
-            className="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
-          >
-            <option value="" disabled>Sélectionnez un sport</option>
-            <option value="Running">Running</option>
-            <option value="padel">Padel</option>
-            <option value="tennis">Tennis</option>
-            <option value="five">Five</option>
-            <option value="badminton">Badminton</option>
-          </select>
-        </div>
-
-        {/* Champ conditionnel pour la distance si "Running" est sélectionné */}
-        {formData.sport === 'Running' && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Distance (km) *</label>
-            <input 
-              type="number" 
-              name="distance" 
-              value={formData.distance} 
-              onChange={handleChange} 
-              required 
-              min="1"
-              placeholder="Ex: 5"
-              className="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
-            />
-          </div>
-        )}
-
-        {/* Nombre minimal et maximal de joueurs */}
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Joueurs Min *</label>
-            <input 
-              type="number" 
-              name="minPlayers" 
-              value={formData.minPlayers} 
-              onChange={handleChange} 
-              required 
-              min="1"
-              className="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Joueurs Max *</label>
-            <input 
-              type="number" 
-              name="maxPlayers" 
-              value={formData.maxPlayers} 
-              onChange={handleChange} 
-              required 
-              min={formData.minPlayers}
-              className="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* Localisation */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Localisation *</label>
-          <input 
-            type="text" 
-            name="location" 
-            value={formData.location} 
-            onChange={handleChange} 
-            required 
-            placeholder="Ex: Parc Saint-Pierre, Calais"
-            className="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        {/* Niveau requis */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Niveau requis *</label>
-          <select 
-            name="level" 
-            value={formData.level} 
-            onChange={handleChange} 
-            required
-            className="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:border-blue-500"
-          >
-            <option value="" disabled>Sélectionnez un niveau</option>
-            <option value="Débutant">Débutant</option>
-            <option value="Intermédiaire">Intermédiaire</option>
-            <option value="Avancé">Avancé</option>
-            <option value="Expert">Expert</option>
-          </select>
-        </div>
-
-        <button 
-          type="submit" 
-          className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200"
-        >
-          Publier la session
-        </button>
-      </form>
-    </div>
-  );
 }
+
+// Crée un nouvel événement et le renvoie.
+function creerEvenement(data) {
+  const evt = {
+    id: prochainId++,
+    titre: data.titre.trim(),
+    sport: data.sport,
+    lieu: data.lieu.trim(),
+    date: data.date,
+    places: Number(data.places),
+    participe: false
+  };
+  evenements.push(evt);
+  return evt;
+}
+
+// Modifie un événement existant (par id).
+function modifierEvenement(id, data) {
+  const evt = evenements.find(e => e.id === Number(id));
+  if (!evt) return null;
+  Object.assign(evt, {
+    titre: data.titre.trim(),
+    sport: data.sport,
+    lieu: data.lieu.trim(),
+    date: data.date,
+    places: Number(data.places)
+  });
+  return evt;
+}
+
+// Supprime un événement (par id).
+function supprimerEvenement(id) {
+  evenements = evenements.filter(e => e.id !== Number(id));
+}
+
+// (Dé)inscrit l'utilisateur : décrémente/incrémente les places disponibles.
+function participer(id) {
+  const evt = evenements.find(e => e.id === Number(id));
+  if (!evt) return null;
+  if (evt.participe) {
+    evt.participe = false;
+    evt.places++;
+  } else if (evt.places > 0) {
+    evt.participe = true;
+    evt.places--;
+  }
+  return evt;
+}
+
+/*
+  ============================================================================
+  FICHIER : js/events.js
+  RÔLE    : Simuler le "backend" des sessions sportives via un tableau en mémoire.
+  CONTENU :
+    - evenements[] : jeu de données statique servant de base de démonstration.
+    - rechercherEvenements(ville, rayon) : filtre "géolocalisé" simplifié (par
+      ville, avec l'option "Partout" quand le rayon vaut 100).
+    - creerEvenement / modifierEvenement / supprimerEvenement : opérations CRUD
+      sur le tableau, chacune renvoyant l'événement concerné.
+    - participer(id) : bascule l'inscription de l'utilisateur et ajuste le nombre
+      de places disponibles.
+    - Ces fonctions ne manipulent PAS le DOM : c'est js/app.js qui appelle ces
+      fonctions puis rafraîchit l'affichage. Séparation nette logique / rendu.
+  PLACE DANS LE PROJET : couche "données" utilisée par app.js après validation.
+  ============================================================================
+*/
