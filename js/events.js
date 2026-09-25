@@ -26,6 +26,21 @@ function creerEvenement(data) {
   return evt;
 }
 
+// Modifie un événement existant (par id).
+function modifierEvenement(id, data) {
+  const evt = evenements.find(e => e.id === Number(id));
+  if (!evt) return null;
+  Object.assign(evt, {
+    titre: data.titre.trim(),
+    sport: data.sport,
+    lieu: data.lieu.trim(),
+    date: data.date,
+    places: Number(data.places)
+  });
+  return evt;
+}
+
+
 
 
 
