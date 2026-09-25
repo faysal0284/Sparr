@@ -1,92 +1,158 @@
 /* Thème "Sparr" — variables de design */
+/* :root permet de définir des variables globales réutilisables dans tout le fichier, facilitant les changements de thème */
 :root {
+  /* Couleurs principales du thème (orange/rouge) */
   --accent: #ff5a1f;
   --accent-dark: #e04a12;
-  --ink: #1a1c22;
-  --muted: #6b7280;
-  --bg: #f4f5f7;
-  --card: #ffffff;
-  --border: #e5e7eb;
-  --radius: 14px;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  
+  /* Couleurs neutres pour le texte, les fonds et les bordures */
+  --ink: #1a1c22;       /* Texte principal (très sombre) */
+  --muted: #6b7280;     /* Texte secondaire (gris) */
+  --bg: #f4f5f7;        /* Couleur de fond générale de l'application */
+  --card: #ffffff;      /* Fond blanc pour les conteneurs (cartes, formulaires) */
+  --border: #e5e7eb;    /* Couleur des bordures séparatrices */
+  
+  /* Variables de structure et d'effets */
+  --radius: 14px;       /* Arrondi standard pour les cartes et gros éléments */
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06); /* Ombre légère pour donner de la profondeur */
+  
+  /* Police système : s'adapte automatiquement à l'OS (Apple, Windows, Android) pour des performances optimales */
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Reset CSS basique */
+/* Assure que le padding et les bordures sont inclus dans la largeur/hauteur totale des éléments */
 * { box-sizing: border-box; }
 
+/* Styles fondamentaux du corps du document */
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  line-height: 1.5;
+  margin: 0;                /* Supprime la marge par défaut du navigateur */
+  background: var(--bg);    /* Applique le fond gris clair */
+  color: var(--ink);        /* Applique la couleur de texte principale */
+  line-height: 1.5;         /* Améliore la lisibilité du texte (interligne) */
 }
 
+/* Classe utilitaire globale */
+/* Permet de masquer un élément n'importe où dans l'app, le !important force l'application */
 .hidden { display: none !important; }
 
-/* En-tête */
+/* =========================================
+   En-tête de l'application (Header)
+   ========================================= */
 .app-header {
-  display: flex;
-  align-items: center;
-  padding: 14px 24px;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
+  display: flex;            /* Aligne les éléments horizontalement */
+  align-items: center;      /* Centre les éléments verticalement */
+  padding: 14px 24px;       /* Espace interne (haut/bas gauche/droite) */
+  background: var(--card);  /* Fond blanc */
+  border-bottom: 1px solid var(--border); /* Ligne de séparation en bas */
 }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 22px; }
+
+/* Style de la marque / Logo dans le header */
+.brand { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px;                 /* Espace entre l'icône et le texte */
+  font-weight: 800;         /* Police très grasse */
+  font-size: 22px; 
+}
+/* Partie du logo mise en évidence avec la couleur d'accentuation */
 .brand-logo { color: var(--accent); }
 
-/* Contenu principal */
-.app-main { max-width: 860px; margin: 0 auto; padding: 24px; }
+/* =========================================
+   Contenu principal (Layout)
+   ========================================= */
+/* Conteneur principal qui centre et limite la largeur du contenu */
+.app-main { 
+  max-width: 860px;         /* Empêche le contenu de devenir trop large sur grand écran */
+  margin: 0 auto;           /* Centre le conteneur horizontalement */
+  padding: 24px;            /* Espace interne global */
+}
+
+/* Espacement entre les différentes sections de la page */
 .section { margin-bottom: 32px; }
+
+/* Style du titre de niveau 1 */
 h1 { font-size: 24px; margin: 0 0 16px; }
 
-/* Boutons */
+/* =========================================
+   Boutons
+   ========================================= */
+/* Style de base partagé par tous les boutons */
 .btn {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-weight: 600;
+  border: none;             /* Retire la bordure par défaut */
+  border-radius: 10px;      /* Coins arrondis */
+  padding: 10px 18px;       /* Espace interne (hauteur / largeur) */
+  font-weight: 600;         /* Texte en demi-gras */
   font-size: 14px;
-  cursor: pointer;
+  cursor: pointer;          /* Affiche une main au survol pour indiquer l'interactivité */
 }
+
+/* Bouton d'action principale */
 .btn-primary { background: var(--accent); color: #fff; }
+/* État au survol du bouton principal (légèrement plus foncé) */
 .btn-primary:hover { background: var(--accent-dark); }
+
+/* Bouton transparent/secondaire */
 .btn-ghost { background: var(--bg); color: var(--ink); }
+
+/* Bouton pour les actions destructives (ex: supprimer) */
 .btn-danger { background: #fee2e2; color: #b91c1c; }
 
-/* Champs de formulaire */
+/* =========================================
+   Champs de formulaire
+   ========================================= */
+/* Styles pour les champs de saisie de texte et les listes déroulantes */
 input, select {
-  width: 100%;
+  width: 100%;              /* Prend toute la largeur disponible */
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  font: inherit;
+  font: inherit;            /* Hérite de la police définie dans :root */
   background: #fff;
 }
+/* État lorsqu'un utilisateur clique dans le champ (focus) */
 input:focus, select:focus {
-  outline: 2px solid var(--accent);
-  border-color: var(--accent);
+  outline: 2px solid var(--accent); /* Ajoute un contour de couleur */
+  border-color: var(--accent);      /* Change la couleur de la bordure */
 }
 
-/* Carte de formulaire */
+/* =========================================
+   Carte de formulaire (Conteneur d'ajout/édition)
+   ========================================= */
 .form-card {
-  display: grid;
-  gap: 14px;
+  display: grid;            /* Utilise Grid pour empiler les éléments facilement */
+  gap: 14px;                /* Espace uniforme entre chaque champ du formulaire */
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 22px;
   box-shadow: var(--shadow);
 }
-.form-card label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
-.form-errors { color: #b91c1c; font-size: 13px; font-weight: 600; }
-.form-errors ul { margin: 0; padding-left: 18px; }
+/* Style des étiquettes (labels) associées aux champs */
+.form-card label { 
+  display: grid; 
+  gap: 6px;                 /* Espace entre le texte du label et l'input lui-même */
+  font-weight: 600; 
+  font-size: 14px; 
+}
 
-/* Grille de cartes d'événements */
+/* Styles pour l'affichage des messages d'erreur du formulaire */
+.form-errors { color: #b91c1c; font-size: 13px; font-weight: 600; }
+.form-errors ul { margin: 0; padding-left: 18px; } /* Ajuste l'indentation de la liste d'erreurs */
+
+/* =========================================
+   Grille et Cartes d'événements (Sessions)
+   ========================================= */
+/* Conteneur de la liste des sessions sportives */
 .cards-grid {
   display: grid;
+  /* Crée une grille adaptative : les colonnes font au moins 240px, 
+     et s'étirent (1fr) pour remplir l'espace. Le nombre de colonnes s'ajuste tout seul. */
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+  gap: 16px; /* Espace entre les cartes */
 }
+
+/* Style individuel d'une carte d'événement */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -94,26 +160,39 @@ input:focus, select:focus {
   padding: 18px;
   box-shadow: var(--shadow);
   display: grid;
-  gap: 8px;
+  gap: 8px; /* Espace vertical entre le titre, les infos et les boutons de la carte */
 }
+
+/* Étiquette indiquant le type de sport sur la carte */
 .card .sport-tag {
   display: inline-block;
-  background: #fff1eb;
-  color: var(--accent-dark);
+  background: #fff1eb;          /* Fond orange très clair */
+  color: var(--accent-dark);    /* Texte orange foncé */
   font-size: 12px;
   font-weight: 700;
   padding: 3px 10px;
-  border-radius: 999px;
-  width: fit-content;
+  border-radius: 999px;         /* Forme de pilule (arrondi maximum) */
+  width: fit-content;           /* La largeur s'adapte au texte contenu */
 }
-.card h3 { margin: 0; font-size: 17px; }
-.card .meta { color: var(--muted); font-size: 13px; }
-.card-actions { display: flex; gap: 8px; margin-top: 6px; }
-.card-actions .btn { padding: 8px 14px; }
 
-/* Responsive */
+/* Titre de l'événement dans la carte */
+.card h3 { margin: 0; font-size: 17px; }
+
+/* Informations secondaires (date, lieu, etc.) */
+.card .meta { color: var(--muted); font-size: 13px; }
+
+/* Zone des boutons d'action (Modifier/Supprimer) en bas de la carte */
+.card-actions { display: flex; gap: 8px; margin-top: 6px; }
+.card-actions .btn { padding: 8px 14px; } /* Rend les boutons de la carte légèrement plus petits */
+
+/* =========================================
+   Responsive Design (Adaptation mobile)
+   ========================================= */
+/* Les règles suivantes s'appliquent uniquement sur les écrans de 640px ou moins (téléphones) */
 @media (max-width: 640px) {
-  .app-main { padding: 16px; }
+  .app-main { 
+    padding: 16px; /* Réduit les marges extérieures sur petit écran pour gagner de la place */
+  }
 }
 
 /*
@@ -129,4 +208,3 @@ input:focus, select:focus {
   PLACE DANS LE PROJET : feuille de style unique liée depuis index.html.
   ============================================================================
 */
-
