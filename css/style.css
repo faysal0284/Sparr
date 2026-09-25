@@ -1,1 +1,132 @@
 
+/* Thème "Sparr" — variables de design */
+:root {
+  --accent: #ff5a1f;
+  --accent-dark: #e04a12;
+  --ink: #1a1c22;
+  --muted: #6b7280;
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --radius: 14px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.hidden { display: none !important; }
+
+/* En-tête */
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 22px; }
+.brand-logo { color: var(--accent); }
+
+/* Contenu principal */
+.app-main { max-width: 860px; margin: 0 auto; padding: 24px; }
+.section { margin-bottom: 32px; }
+h1 { font-size: 24px; margin: 0 0 16px; }
+
+/* Boutons */
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-ghost { background: var(--bg); color: var(--ink); }
+.btn-danger { background: #fee2e2; color: #b91c1c; }
+
+/* Champs de formulaire */
+input, select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font: inherit;
+  background: #fff;
+}
+input:focus, select:focus {
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
+}
+
+/* Carte de formulaire */
+.form-card {
+  display: grid;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+.form-card label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.form-errors { color: #b91c1c; font-size: 13px; font-weight: 600; }
+.form-errors ul { margin: 0; padding-left: 18px; }
+
+/* Grille de cartes d'événements */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 8px;
+}
+.card .sport-tag {
+  display: inline-block;
+  background: #fff1eb;
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  width: fit-content;
+}
+.card h3 { margin: 0; font-size: 17px; }
+.card .meta { color: var(--muted); font-size: 13px; }
+.card-actions { display: flex; gap: 8px; margin-top: 6px; }
+.card-actions .btn { padding: 8px 14px; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .app-main { padding: 16px; }
+}
+
+/*
+  ============================================================================
+  FICHIER : css/style.css
+  RÔLE    : Identité visuelle et mise en page de la maquette Sparr, réduite à la
+            gestion des sessions (formulaire + liste de cartes).
+  CONTENU :
+    - Variables CSS (:root) : couleurs, rayons, ombres, police du thème sportif.
+    - En-tête, boutons, champs de formulaire, carte de formulaire (form-card),
+      grille responsive de cartes d'événements et messages d'erreur.
+    - Classe utilitaire .hidden : masque le bouton "Annuler" hors mode édition.
+  PLACE DANS LE PROJET : feuille de style unique liée depuis index.html.
+  ============================================================================
+*/
