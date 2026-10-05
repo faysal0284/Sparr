@@ -64,9 +64,11 @@ function modifierEvenement(id, data) {
   return evt;
 }
 // Supprime un événement existant (par id).
+// Supprime un événement existant (par id), uniquement si on en est le créateur.
 function supprimerEvenement(id) {
   const index = evenements.findIndex(e => e.id === Number(id));
   if (index === -1) return false;
+  if (evenements[index].createurId !== monId) return false;
   evenements.splice(index, 1);
   return true;
 }
