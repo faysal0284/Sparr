@@ -90,7 +90,16 @@
       <h1>Mes sessions</h1>
       <div id="liste-evenements" class="cards-grid"></div>
     </section>
-
+<!-- Modale de confirmation de suppression -->
+<div id="modal-suppression" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-texte">
+  <div class="modal-contenu">
+    <p id="modal-texte">Êtes-vous sûr de vouloir supprimer cet événement ?</p>
+    <div class="card-actions">
+      <button type="button" class="btn btn-ghost" id="modal-annuler">Annuler</button>
+      <button type="button" class="btn btn-primary" id="modal-confirmer">Supprimer</button>
+    </div>
+  </div>
+</div>
   </main>
 
   <!-- Scripts : validation d'abord, puis logique métier, puis app -->

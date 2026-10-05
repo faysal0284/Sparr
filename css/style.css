@@ -261,3 +261,24 @@ input:focus, select:focus {
   PLACE DANS LE PROJET : feuille de style unique liée depuis index.html.
   ============================================================================
 */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal.hidden { display: none; }
+.modal-contenu {
+  background: #fff;
+  color: #222;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: calc(100% - 32px);
+  text-align: center;
+}
+.modal-contenu p { margin: 0 0 16px; font-size: 1.05rem; }
+.modal-contenu .card-actions { justify-content: center; }

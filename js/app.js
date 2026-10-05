@@ -36,7 +36,7 @@ function afficherEvenements() {
       <p>${evt.sport} — ${evt.lieu}</p>
       <p>${evt.date} — ${evt.places} places</p>
       ${estProprietaire ? `<button class="btn-modifier" data-id="${evt.id}">Modifier</button>` : ''}
-      <button class="btn-supprimer" data-id="${evt.id}">Supprimer</button>
+      ${estProprietaire ? `<button class="btn-supprimer" data-id="${evt.id}">Supprimer</button>` : ''}
     `;
     liste.appendChild(carte);
   });
@@ -86,13 +86,46 @@ form.addEventListener('submit', (e) => {
   btnAnnuler.classList.add('hidden');
   afficherEvenements();
 });
+// ===== Modale de confirmation de suppression =====
+const modalSuppression = document.getElementById('modal-suppression');
+const btnModalConfirmer = document.getElementById('modal-confirmer');
+const btnModalAnnuler = document.getElementById('modal-annuler');
+let idASupprimer = null;
+
+function ouvrirModaleSuppression(id) {
+  idASupprimer = id;
+  modalSuppression.classList.remove('hidden');
+}
+
+function fermerModaleSuppression() {
+  idASupprimer = null;
+  modalSuppression.classList.add('hidden');
+}
+
+btnModalConfirmer.addEventListener('click', () => {
+  if (idASupprimer !== null) {
+    supprimerEvenement(idASupprimer);
+    afficherEvenements();
+  }
+  fermerModaleSuppression();
+});
+
+// Fermer sans confirmer : bouton Annuler, clic sur le fond, touche Échap
+btnModalAnnuler.addEventListener('click', fermerModaleSuppression);
+modalSuppression.addEventListener('click', (e) => {
+  if (e.target === modalSuppression) fermerModaleSuppression();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') fermerModaleSuppression();
+});
 liste.addEventListener('click', (e) => {
   const id = e.target.dataset.id;
   if (!id) return;
 
   if (e.target.classList.contains('btn-supprimer')) {
-    supprimerEvenement(id);
-    afficherEvenements();
+    const evt = evenements.find(ev => ev.id === Number(id));
+    if (!evt || evt.createurId !== monId) return;
+    ouvrirModaleSuppression(id);
   }
 
   if (e.target.classList.contains('btn-modifier')) {
