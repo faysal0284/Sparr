@@ -7,7 +7,24 @@ const form = document.getElementById('form-evenement');
 const btnAnnuler = document.getElementById('btn-annuler');
 const formTitre = document.getElementById('form-titre');
 const erreurs = document.getElementById('err-evenement');
+const selectSport = document.getElementById('evt-sport');
+const groupeDistance = document.getElementById('groupe-distance');
+const champDistance = document.getElementById('evt-distance');
+// Empêche de choisir une date passée dans le sélecteur
+const champDate = document.getElementById('evt-date');
+const aujourdhui = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
+champDate.setAttribute('min', aujourdhui);
 
+selectSport.addEventListener('change', () => {
+  if (selectSport.value === 'Running') {
+    groupeDistance.classList.remove('hidden');
+    champDistance.required = true;
+  } else {
+    groupeDistance.classList.add('hidden');
+    champDistance.required = false;
+    champDistance.value = '';
+  }
+});
 function afficherEvenements() {
   liste.innerHTML = '';
   evenements.forEach(evt => {
@@ -31,9 +48,25 @@ form.addEventListener('submit', (e) => {
     titre: document.getElementById('evt-titre').value,
     sport: document.getElementById('evt-sport').value,
     lieu: document.getElementById('evt-lieu').value,
+    localisation: document.getElementById('evt-localisation').value,
     date: document.getElementById('evt-date').value,
-    places: document.getElementById('evt-places').value
+    places: document.getElementById('evt-places').value,
+    joueursMin: document.getElementById('evt-joueurs-min').value,
+    joueursMax: document.getElementById('evt-joueurs-max').value,
+    niveau: document.getElementById('evt-niveau').value,
+    distance: document.getElementById('evt-sport').value === 'Running'
+      ? document.getElementById('evt-distance').value
+      : null
   };
+
+  // ===== AJOUT : appel de la validation =====
+  const erreur = validerFormulaire(data);
+  if (erreur) {
+    erreurs.textContent = erreur;
+    return; // bloque la suite, rien n'est créé/modifié
+  }
+  erreurs.textContent = '';
+  // ===========================================
 
   if (id) {
     modifierEvenement(id, data);
@@ -43,11 +76,11 @@ form.addEventListener('submit', (e) => {
 
   form.reset();
   document.getElementById('evt-id').value = '';
+  groupeDistance.classList.add('hidden');
   formTitre.textContent = 'Créer une session';
   btnAnnuler.classList.add('hidden');
   afficherEvenements();
 });
-
 liste.addEventListener('click', (e) => {
   const id = e.target.dataset.id;
   if (!id) return;

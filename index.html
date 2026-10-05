@@ -21,36 +21,68 @@
     <section class="section">
       <h1 id="form-titre">Créer une session</h1>
       <form id="form-evenement" class="form-card" novalidate>
-        <input type="hidden" id="evt-id" />
-        <label>Titre
-          <input type="text" id="evt-titre" placeholder="Footing matinal" />
-        </label>
-        <label>Sport
-          <select id="evt-sport">
-            <option value="">— Choisir —</option>
-            <option>Course</option>
-            <option>Football</option>
-            <option>Tennis</option>
-            <option>Basket</option>
-            <option>Cyclisme</option>
-            <option>Musculation</option>
-          </select>
-        </label>
-        <label>Lieu (ville)
-          <input type="text" id="evt-lieu" placeholder="Paris" />
-        </label>
-        <label>Date
-          <input type="date" id="evt-date" />
-        </label>
-        <label>Places disponibles
-          <input type="number" id="evt-places" min="1" value="4" />
-        </label>
-        <div class="form-errors" id="err-evenement"></div>
-        <div class="card-actions">
-          <button type="submit" class="btn btn-primary" id="btn-submit">Publier la session</button>
-          <button type="button" class="btn btn-ghost hidden" id="btn-annuler">Annuler</button>
-        </div>
-      </form>
+  <input type="hidden" id="evt-id" />
+  
+  <label>Titre
+    <input type="text" id="evt-titre" placeholder="Footing matinal" />
+  </label>
+  
+  <label>Sport
+    <select id="evt-sport">
+      <option value="">— Choisir —</option>
+      <option>Football</option>
+      <option>Tennis</option>
+      <option>Basket</option>
+      <option>Cyclisme</option>
+      <option>Musculation</option>
+      <option>Running</option>
+    </select>
+  </label>
+
+  <!-- Champ dynamique, caché par défaut -->
+  <label id="groupe-distance" class="hidden">Distance (km)
+    <input type="number" id="evt-distance" min="0.1" step="0.1" placeholder="5" />
+  </label>
+
+  <label>Lieu (ville)
+    <input type="text" id="evt-lieu" placeholder="Paris" />
+  </label>
+
+  <label>Localisation précise
+    <input type="text" id="evt-localisation" placeholder="Parc de la Tête d'Or, entrée nord" />
+  </label>
+
+  <label>Date
+  <input type="date" id="evt-date" />
+  </label>
+
+  <label>Places disponibles
+    <input type="number" id="evt-places" min="1" value="4" />
+  </label>
+
+  <label>Joueurs Min
+    <input type="number" id="evt-joueurs-min" min="1" value="1" />
+  </label>
+
+  <label>Joueurs Max
+    <input type="number" id="evt-joueurs-max" min="1" value="10" />
+  </label>
+
+  <label>Niveau requis
+    <select id="evt-niveau">
+      <option value="">— Choisir —</option>
+      <option>Débutant</option>
+      <option>Intermédiaire</option>
+      <option>Avancé</option>
+    </select>
+  </label>
+
+  <div class="form-errors" id="err-evenement"></div>
+  <div class="card-actions">
+    <button type="submit" class="btn btn-primary" id="btn-submit">Publier la session</button>
+    <button type="button" class="btn btn-ghost hidden" id="btn-annuler">Annuler</button>
+  </div>
+</form>
     </section>
 
     <!-- Liste des événements existants -->
