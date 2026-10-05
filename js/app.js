@@ -1,5 +1,3 @@
-
-
 // app.js — logique d'affichage et interactions
 
 const liste = document.getElementById('liste-evenements');
@@ -10,10 +8,30 @@ const erreurs = document.getElementById('err-evenement');
 const selectSport = document.getElementById('evt-sport');
 const groupeDistance = document.getElementById('groupe-distance');
 const champDistance = document.getElementById('evt-distance');
+
+// Éléments liés à l'authentification
+const sectionAuth = document.getElementById('section-auth');
+const sectionCreation = document.getElementById('section-creation');
+const zoneUtilisateur = document.getElementById('zone-utilisateur');
+const nomUtilisateur = document.getElementById('nom-utilisateur');
+const btnDeconnexion = document.getElementById('btn-deconnexion');
+const authTitre = document.getElementById('auth-titre');
+const formConnexion = document.getElementById('form-connexion');
+const formInscription = document.getElementById('form-inscription');
+const erreurConnexion = document.getElementById('err-connexion');
+const erreurInscription = document.getElementById('err-inscription');
+
 // Empêche de choisir une date passée dans le sélecteur
 const champDate = document.getElementById('evt-date');
 const aujourdhui = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
 champDate.setAttribute('min', aujourdhui);
+
+// Évite l'injection de HTML via les champs texte
+function echapperHtml(texte) {
+  return String(texte ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
 
 selectSport.addEventListener('change', () => {
   if (selectSport.value === 'Running') {
@@ -25,16 +43,17 @@ selectSport.addEventListener('change', () => {
     champDistance.value = '';
   }
 });
+
 function afficherEvenements() {
   liste.innerHTML = '';
   evenements.forEach(evt => {
-    const estProprietaire = evt.createurId === monId;
+    const estProprietaire = monId !== null && evt.createurId === monId;
     const carte = document.createElement('div');
     carte.className = 'card';
     carte.innerHTML = `
-      <h3>${evt.titre}</h3>
-      <p>${evt.sport} — ${evt.lieu}</p>
-      <p>${evt.date} — ${evt.places} places</p>
+      <h3>${echapperHtml(evt.titre)}</h3>
+      <p>${echapperHtml(evt.sport)} — ${echapperHtml(evt.lieu)}</p>
+      <p>${echapperHtml(evt.date)} — ${evt.places} places</p>
       ${estProprietaire ? `<button class="btn-modifier" data-id="${evt.id}">Modifier</button>` : ''}
       ${estProprietaire ? `<button class="btn-supprimer" data-id="${evt.id}">Supprimer</button>` : ''}
     `;
@@ -42,7 +61,119 @@ function afficherEvenements() {
   });
 }
 
-form.addEventListener('submit', (e) => {
+// ===== Affichage selon l'état de connexion =====
+function miseAJourInterface() {
+  const connecte = utilisateur !== null;
+  sectionAuth.classList.toggle('hidden', connecte);
+  sectionCreation.classList.toggle('hidden', !connecte);
+  zoneUtilisateur.classList.toggle('hidden', !connecte);
+  if (connecte) nomUtilisateur.textContent = utilisateur.pseudo;
+  afficherEvenements();
+}
+
+function reinitialiserFormulaire() {
+  form.reset();
+  document.getElementById('evt-id').value = '';
+  groupeDistance.classList.add('hidden');
+  champDistance.required = false;
+  formTitre.textContent = 'Créer une session';
+  btnAnnuler.classList.add('hidden');
+}
+
+// Appelée quand le serveur répond 401 (cookie expiré ou invalide)
+async function sessionExpiree() {
+  definirUtilisateur(null);
+  reinitialiserFormulaire();
+  afficherFormulaireConnexion();
+  erreurConnexion.textContent = 'Votre session a expiré, veuillez vous reconnecter.';
+  await chargerEvenements();
+  miseAJourInterface();
+}
+
+// ===== Connexion / Inscription =====
+function afficherFormulaireConnexion() {
+  authTitre.textContent = 'Connexion';
+  formConnexion.classList.remove('hidden');
+  formInscription.classList.add('hidden');
+  erreurConnexion.textContent = '';
+  erreurInscription.textContent = '';
+}
+
+function afficherFormulaireInscription() {
+  authTitre.textContent = 'Créer un compte';
+  formInscription.classList.remove('hidden');
+  formConnexion.classList.add('hidden');
+  erreurConnexion.textContent = '';
+  erreurInscription.textContent = '';
+}
+
+document.getElementById('vers-inscription').addEventListener('click', afficherFormulaireInscription);
+document.getElementById('vers-connexion').addEventListener('click', afficherFormulaireConnexion);
+
+formConnexion.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const donnees = {
+    email: document.getElementById('conn-email').value,
+    motDePasse: document.getElementById('conn-mdp').value
+  };
+  const erreur = validerConnexion(donnees);
+  if (erreur) { erreurConnexion.textContent = erreur; return; }
+
+  try {
+    const r = await connexion(donnees.email, donnees.motDePasse);
+    if (!r.ok) {
+      erreurConnexion.textContent = (r.data && r.data.erreur) || 'Connexion impossible.';
+      return;
+    }
+  } catch {
+    erreurConnexion.textContent = 'Serveur injoignable.';
+    return;
+  }
+  formConnexion.reset();
+  erreurConnexion.textContent = '';
+  await chargerEvenements();
+  miseAJourInterface();
+});
+
+formInscription.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const donnees = {
+    pseudo: document.getElementById('ins-pseudo').value,
+    email: document.getElementById('ins-email').value,
+    motDePasse: document.getElementById('ins-mdp').value,
+    confirmation: document.getElementById('ins-mdp2').value
+  };
+  const erreur = validerInscription(donnees);
+  if (erreur) { erreurInscription.textContent = erreur; return; }
+
+  try {
+    const r = await inscription(donnees.pseudo, donnees.email, donnees.motDePasse);
+    if (!r.ok) {
+      erreurInscription.textContent = (r.data && r.data.erreur) || "Inscription impossible.";
+      return;
+    }
+  } catch {
+    erreurInscription.textContent = 'Serveur injoignable.';
+    return;
+  }
+  formInscription.reset();
+  erreurInscription.textContent = '';
+  afficherFormulaireConnexion();
+  await chargerEvenements();
+  miseAJourInterface();
+});
+
+btnDeconnexion.addEventListener('click', async () => {
+  await deconnexion();
+  reinitialiserFormulaire();
+  erreurs.textContent = '';
+  afficherFormulaireConnexion();
+  await chargerEvenements();
+  miseAJourInterface();
+});
+
+// ===== Création / modification d'une session =====
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const id = document.getElementById('evt-id').value;
   const data = {
@@ -60,32 +191,33 @@ form.addEventListener('submit', (e) => {
       : null
   };
 
-  // ===== AJOUT : appel de la validation =====
+  // Validation côté client
   const erreur = validerFormulaire(data);
   if (erreur) {
     erreurs.textContent = erreur;
     return; // bloque la suite, rien n'est créé/modifié
   }
   erreurs.textContent = '';
-  // ===========================================
 
-    if (id) {
-    const resultat = modifierEvenement(id, data);
-    if (!resultat) {
-      erreurs.textContent = 'Vous ne pouvez modifier que vos propres sessions.';
-      return;
-    }
-  } else {
-    creerEvenement(data);
+  let r;
+  try {
+    r = id ? await modifierEvenement(id, data) : await creerEvenement(data);
+  } catch {
+    erreurs.textContent = 'Serveur injoignable. Lancez « node server.js » et ouvrez http://localhost:3000.';
+    return;
   }
 
-  form.reset();
-  document.getElementById('evt-id').value = '';
-  groupeDistance.classList.add('hidden');
-  formTitre.textContent = 'Créer une session';
-  btnAnnuler.classList.add('hidden');
+  if (!r.ok) {
+    if (r.status === 401) return sessionExpiree();
+    erreurs.textContent = (r.data && r.data.erreur) || "L'opération a échoué.";
+    return;
+  }
+
+  reinitialiserFormulaire();
+  await chargerEvenements();
   afficherEvenements();
 });
+
 // ===== Modale de confirmation de suppression =====
 const modalSuppression = document.getElementById('modal-suppression');
 const btnModalConfirmer = document.getElementById('modal-confirmer');
@@ -102,10 +234,18 @@ function fermerModaleSuppression() {
   modalSuppression.classList.add('hidden');
 }
 
-btnModalConfirmer.addEventListener('click', () => {
+btnModalConfirmer.addEventListener('click', async () => {
   if (idASupprimer !== null) {
-    supprimerEvenement(idASupprimer);
+    const r = await supprimerEvenement(idASupprimer);
+    fermerModaleSuppression();
+    if (!r.ok) {
+      if (r.status === 401) return sessionExpiree();
+      erreurs.textContent = (r.data && r.data.erreur) || 'Suppression impossible.';
+      return;
+    }
+    await chargerEvenements();
     afficherEvenements();
+    return;
   }
   fermerModaleSuppression();
 });
@@ -118,6 +258,8 @@ modalSuppression.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') fermerModaleSuppression();
 });
+
+// ===== Clics sur les cartes (Modifier / Supprimer) =====
 liste.addEventListener('click', (e) => {
   const id = e.target.dataset.id;
   if (!id) return;
@@ -136,27 +278,36 @@ liste.addEventListener('click', (e) => {
     document.getElementById('evt-titre').value = evt.titre;
     document.getElementById('evt-sport').value = evt.sport;
     document.getElementById('evt-lieu').value = evt.lieu;
+    document.getElementById('evt-localisation').value = evt.localisation || '';
     document.getElementById('evt-date').value = evt.date;
     document.getElementById('evt-places').value = evt.places;
-    formTitre.textContent = 'Modifier la session';
-    btnAnnuler.classList.remove('hidden');
-      document.getElementById('evt-localisation').value = evt.localisation || '';
     document.getElementById('evt-joueurs-min').value = evt.joueursMin || 1;
     document.getElementById('evt-joueurs-max').value = evt.joueursMax || 10;
     document.getElementById('evt-niveau').value = evt.niveau || '';
+    formTitre.textContent = 'Modifier la session';
+    btnAnnuler.classList.remove('hidden');
     if (evt.sport === 'Running') {
       groupeDistance.classList.remove('hidden');
+      champDistance.required = true;
       champDistance.value = evt.distance || '';
+    } else {
+      groupeDistance.classList.add('hidden');
+      champDistance.required = false;
+      champDistance.value = '';
     }
+    sectionCreation.scrollIntoView({ behavior: 'smooth' });
   }
 });
 
 btnAnnuler.addEventListener('click', () => {
-  form.reset();
-  document.getElementById('evt-id').value = '';
-  formTitre.textContent = 'Créer une session';
-  btnAnnuler.classList.add('hidden');
+  reinitialiserFormulaire();
+  erreurs.textContent = '';
 });
 
-// Affichage initial
-afficherEvenements();
+// ===== Affichage initial =====
+chargerUtilisateur()
+  .then(chargerEvenements)
+  .then(miseAJourInterface)
+  .catch(() => {
+    erreurConnexion.textContent = 'Serveur injoignable. Lancez « node server.js » et ouvrez http://localhost:3000.';
+  });
