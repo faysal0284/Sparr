@@ -28,13 +28,14 @@ selectSport.addEventListener('change', () => {
 function afficherEvenements() {
   liste.innerHTML = '';
   evenements.forEach(evt => {
+    const estProprietaire = evt.createurId === monId;
     const carte = document.createElement('div');
     carte.className = 'card';
     carte.innerHTML = `
       <h3>${evt.titre}</h3>
       <p>${evt.sport} — ${evt.lieu}</p>
       <p>${evt.date} — ${evt.places} places</p>
-      <button class="btn-modifier" data-id="${evt.id}">Modifier</button>
+      ${estProprietaire ? `<button class="btn-modifier" data-id="${evt.id}">Modifier</button>` : ''}
       <button class="btn-supprimer" data-id="${evt.id}">Supprimer</button>
     `;
     liste.appendChild(carte);
@@ -68,8 +69,12 @@ form.addEventListener('submit', (e) => {
   erreurs.textContent = '';
   // ===========================================
 
-  if (id) {
-    modifierEvenement(id, data);
+    if (id) {
+    const resultat = modifierEvenement(id, data);
+    if (!resultat) {
+      erreurs.textContent = 'Vous ne pouvez modifier que vos propres sessions.';
+      return;
+    }
   } else {
     creerEvenement(data);
   }
@@ -93,6 +98,7 @@ liste.addEventListener('click', (e) => {
   if (e.target.classList.contains('btn-modifier')) {
     const evt = evenements.find(ev => ev.id === Number(id));
     if (!evt) return;
+    if (evt.createurId !== monId) return;
     document.getElementById('evt-id').value = evt.id;
     document.getElementById('evt-titre').value = evt.titre;
     document.getElementById('evt-sport').value = evt.sport;
@@ -101,6 +107,14 @@ liste.addEventListener('click', (e) => {
     document.getElementById('evt-places').value = evt.places;
     formTitre.textContent = 'Modifier la session';
     btnAnnuler.classList.remove('hidden');
+      document.getElementById('evt-localisation').value = evt.localisation || '';
+    document.getElementById('evt-joueurs-min').value = evt.joueursMin || 1;
+    document.getElementById('evt-joueurs-max').value = evt.joueursMax || 10;
+    document.getElementById('evt-niveau').value = evt.niveau || '';
+    if (evt.sport === 'Running') {
+      groupeDistance.classList.remove('hidden');
+      champDistance.value = evt.distance || '';
+    }
   }
 });
 
