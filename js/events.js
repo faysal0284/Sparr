@@ -11,22 +11,25 @@ let evenements = [
 let prochainId = 5;
 
 
-// Crée un nouvel événement et le renvoie.
 function creerEvenement(data) {
   const evt = {
     id: prochainId++,
     titre: data.titre.trim(),
     sport: data.sport,
     lieu: data.lieu.trim(),
+    localisation: data.localisation.trim(),
     date: data.date,
     places: Number(data.places),
+    joueursMin: Number(data.joueursMin),
+    joueursMax: Number(data.joueursMax),
+    niveau: data.niveau,
+    distance: data.distance ? Number(data.distance) : null,
     participe: false
   };
   evenements.push(evt);
   return evt;
 }
 
-// Modifie un événement existant (par id).
 function modifierEvenement(id, data) {
   const evt = evenements.find(e => e.id === Number(id));
   if (!evt) return null;
@@ -34,8 +37,13 @@ function modifierEvenement(id, data) {
     titre: data.titre.trim(),
     sport: data.sport,
     lieu: data.lieu.trim(),
+    localisation: data.localisation.trim(),
     date: data.date,
-    places: Number(data.places)
+    places: Number(data.places),
+    joueursMin: Number(data.joueursMin),
+    joueursMax: Number(data.joueursMax),
+    niveau: data.niveau,
+    distance: data.distance ? Number(data.distance) : null
   });
   return evt;
 }
