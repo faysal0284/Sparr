@@ -1,0 +1,16 @@
+.user-zone {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+ 
+.user-zone.hidden {
+  display: none;
+}
+ button:disabled,
+.btn-rejoindre:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}

@@ -1,5 +1,5 @@
 // server.js — mini serveur Node sans dépendance
-// Stockage CSV + authentification (mots de passe hachés, cookie signé)
+// Stockage CSV + authentification (mots de passe hachés, cookie signé) + participations
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -9,9 +9,11 @@ const PORT = 3000;
 const DATA = path.join(__dirname, 'data');
 const F_SESSIONS = path.join(DATA, 'sessions.csv');
 const F_USERS = path.join(DATA, 'utilisateurs.csv');
+const F_PARTS = path.join(DATA, 'participations.csv');
 const F_SECRET = path.join(DATA, 'secret.key');
 const COLS_SESSIONS = ['id', 'titre', 'sport', 'lieu', 'localisation', 'date', 'places', 'joueursMin', 'joueursMax', 'niveau', 'distance', 'createurId'];
 const COLS_USERS = ['id', 'pseudo', 'email', 'sel', 'hash'];
+const COLS_PARTS = ['sessionId', 'userId'];
 
 const NOM_COOKIE = 'sparr_token';
 const DUREE_SESSION = 7 * 24 * 3600 * 1000; // 7 jours
@@ -123,7 +125,9 @@ function utilisateurCourant(req) {
 const publicUser = u => ({ id: u.id, pseudo: u.pseudo });
 
 // ---------- Sessions ----------
-function versSession(o) {
+// parts = liste des participations ; monId = id de l'utilisateur connecté (ou null)
+function versSession(o, parts = [], monId = null) {
+  const inscrits = parts.filter(p => Number(p.sessionId) === Number(o.id));
   return {
     ...o,
     id: Number(o.id),
@@ -131,10 +135,15 @@ function versSession(o) {
     joueursMin: Number(o.joueursMin),
     joueursMax: Number(o.joueursMax),
     distance: o.distance ? Number(o.distance) : null,
-    participe: false
+    inscrits: inscrits.length,
+    participe: monId !== null && inscrits.some(p => p.userId === monId)
   };
 }
-const lireSessions = () => lire(F_SESSIONS, COLS_SESSIONS).map(versSession);
+const lireParts = () => lire(F_PARTS, COLS_PARTS);
+const lireSessions = (monId = null) => {
+  const parts = lireParts();
+  return lire(F_SESSIONS, COLS_SESSIONS).map(o => versSession(o, parts, monId));
+};
 
 function validerSession(data) {
   if (!data.titre || !String(data.titre).trim()) return 'Le titre est obligatoire.';
@@ -152,7 +161,8 @@ if (!fs.existsSync(F_SESSIONS)) {
     { id: 4, titre: 'Sortie vélo côtière', sport: 'Cyclisme', lieu: 'Nice', date: '2026-10-06', places: 6, createurId: 'seed' }
   ]);
 }
-
+supprimerSessionsPassees();
+setInterval(supprimerSessionsPassees, 60 * 60 * 1000); // toutes les heures
 // ---------- HTTP ----------
 function lireCorps(req) {
   return new Promise(resolve => {
@@ -176,7 +186,7 @@ const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const serveur = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
-  // --- Inscription ---
+  // --- Inscription (compte) ---
   if (url.pathname === '/api/inscription' && req.method === 'POST') {
     const { pseudo, email, motDePasse } = await lireCorps(req);
     const p = String(pseudo || '').trim();
@@ -217,15 +227,17 @@ const serveur = http.createServer(async (req, res) => {
   }
 
   // --- Utilisateur connecté (null si personne) ---
-  if (url.pathname === '/api/moi' && req.method === 'GET') {
-    const user = utilisateurCourant(req);
-    return repondre(res, 200, { utilisateur: user ? publicUser(user) : null });
-  }
-
+  if (url.pathname === '/api/sessions' && req.method === 'GET') {
+  supprimerSessionsPassees();
+  const user = utilisateurCourant(req);
+  return repondre(res, 200, lireSessions(user ? user.id : null));
+}
   // --- API sessions ---
   if (url.pathname === '/api/sessions' && req.method === 'GET') {
-    return repondre(res, 200, lireSessions());
-  }
+  supprimerSessionsPassees();
+  const user = utilisateurCourant(req);
+  return repondre(res, 200, lireSessions(user ? user.id : null));
+}
 
   if (url.pathname === '/api/sessions' && req.method === 'POST') {
     const user = utilisateurCourant(req);
@@ -252,7 +264,7 @@ const serveur = http.createServer(async (req, res) => {
     };
     sessions.push(nouvelle);
     ecrire(F_SESSIONS, COLS_SESSIONS, sessions);
-    return repondre(res, 201, versSession(nouvelle));
+    return repondre(res, 201, versSession(nouvelle, [], user.id));
   }
 
   const m = url.pathname.match(/^\/api\/sessions\/(\d+)$/);
@@ -271,12 +283,21 @@ const serveur = http.createServer(async (req, res) => {
     if (req.method === 'DELETE') {
       sessions.splice(index, 1);
       ecrire(F_SESSIONS, COLS_SESSIONS, sessions);
+      // On supprime aussi les inscriptions liées à cette session
+      ecrire(F_PARTS, COLS_PARTS, lireParts().filter(p => Number(p.sessionId) !== Number(m[1])));
       return repondre(res, 200, { ok: true });
     }
 
     const data = await lireCorps(req);
     const erreur = validerSession(data);
     if (erreur) return repondre(res, 400, { erreur });
+
+    // Empêche de réduire les places en dessous du nombre d'inscrits
+    const nbInscrits = lireParts().filter(p => Number(p.sessionId) === Number(sessions[index].id)).length;
+    if (Number(data.places) < nbInscrits) {
+      return repondre(res, 400, { erreur: `Il y a déjà ${nbInscrits} inscrit(s), les places ne peuvent pas être inférieures.` });
+    }
+
     sessions[index] = {
       ...sessions[index],
       titre: String(data.titre).trim(),
@@ -291,7 +312,35 @@ const serveur = http.createServer(async (req, res) => {
       distance: data.distance || ''
     };
     ecrire(F_SESSIONS, COLS_SESSIONS, sessions);
-    return repondre(res, 200, versSession(sessions[index]));
+    return repondre(res, 200, versSession(sessions[index], lireParts(), user.id));
+  }
+
+  // --- Participation à une session (rejoindre / quitter) ---
+  const mp = url.pathname.match(/^\/api\/sessions\/(\d+)\/participation$/);
+  if (mp && (req.method === 'POST' || req.method === 'DELETE')) {
+    const user = utilisateurCourant(req);
+    if (!user) return repondre(res, 401, { erreur: 'Connexion requise.' });
+
+    const sessionId = Number(mp[1]);
+    const session = lire(F_SESSIONS, COLS_SESSIONS).find(s => Number(s.id) === sessionId);
+    if (!session) return repondre(res, 404, { erreur: 'Session introuvable.' });
+
+    let parts = lireParts();
+    const dejaInscrit = parts.some(p => Number(p.sessionId) === sessionId && p.userId === user.id);
+
+    if (req.method === 'POST') {
+      if (session.createurId === user.id) return repondre(res, 400, { erreur: 'Vous êtes le créateur de cette session.' });
+      if (dejaInscrit) return repondre(res, 409, { erreur: 'Vous êtes déjà inscrit.' });
+      if (session.date < new Date().toISOString().split('T')[0]) return repondre(res, 400, { erreur: 'Cette session est passée.' });
+      const nb = parts.filter(p => Number(p.sessionId) === sessionId).length;
+      if (nb >= Number(session.places)) return repondre(res, 409, { erreur: 'Session complète.' });
+      parts.push({ sessionId, userId: user.id });
+    } else {
+      parts = parts.filter(p => !(Number(p.sessionId) === sessionId && p.userId === user.id));
+    }
+
+    ecrire(F_PARTS, COLS_PARTS, parts);
+    return repondre(res, 200, versSession(session, parts, user.id));
   }
 
   // --- Fichiers statiques (index.html, css/, js/ uniquement) ---
@@ -307,3 +356,15 @@ const serveur = http.createServer(async (req, res) => {
 });
 
 serveur.listen(PORT, () => console.log(`Sparr sur http://localhost:${PORT}`));
+function supprimerSessionsPassees() {
+  const aujourdhui = new Date().toISOString().split('T')[0];
+  const sessions = lire(F_SESSIONS, COLS_SESSIONS);
+  const restantes = sessions.filter(s => s.date >= aujourdhui);
+  if (restantes.length === sessions.length) return; // rien à supprimer
+
+  ecrire(F_SESSIONS, COLS_SESSIONS, restantes);
+
+  // On supprime aussi les inscriptions des sessions disparues
+  const ids = new Set(restantes.map(s => Number(s.id)));
+  ecrire(F_PARTS, COLS_PARTS, lireParts().filter(p => ids.has(Number(p.sessionId))));
+}

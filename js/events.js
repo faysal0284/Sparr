@@ -55,3 +55,5 @@ async function chargerEvenements() {
 const creerEvenement = (data) => appel('/api/sessions', 'POST', data);
 const modifierEvenement = (id, data) => appel('/api/sessions/' + id, 'PUT', data);
 const supprimerEvenement = (id) => appel('/api/sessions/' + id, 'DELETE');
+const rejoindreSession = (id) => appel('/api/sessions/' + id + '/participation', 'POST');
+const quitterSession = (id) => appel('/api/sessions/' + id + '/participation', 'DELETE');

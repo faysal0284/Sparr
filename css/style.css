@@ -298,4 +298,9 @@ input:focus, select:focus {
 .user-zone.hidden {
   display: none;
 }
- 
+ button:disabled,
+.btn-rejoindre:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}

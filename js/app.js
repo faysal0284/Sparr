@@ -48,18 +48,40 @@ function afficherEvenements() {
   liste.innerHTML = '';
   evenements.forEach(evt => {
     const estProprietaire = monId !== null && evt.createurId === monId;
+    const inscrits = evt.inscrits || 0;
+    const complet = inscrits >= evt.places;
+    const passee = evt.date < aujourdhui;
+
+    // Bouton d'inscription (le créateur n'en a pas)
+    let action = '';
+    if (!estProprietaire) {
+      if (passee) {
+        action = `<button class="btn-rejoindre" data-id="${evt.id}" disabled title="Session dépassée">Session dépassée</button>`;
+      } else if (evt.participe) {
+        action = `<button class="btn-quitter" data-id="${evt.id}">Se désinscrire</button>`;
+      } else if (complet) {
+        action = `<button class="btn-rejoindre" data-id="${evt.id}" disabled title="Session complète">Complet</button>`;
+      } else {
+        action = `<button class="btn-rejoindre" data-id="${evt.id}">Rejoindre</button>`;
+      }
+    }
+
     const carte = document.createElement('div');
     carte.className = 'card';
     carte.innerHTML = `
       <h3>${echapperHtml(evt.titre)}</h3>
       <p>${echapperHtml(evt.sport)} — ${echapperHtml(evt.lieu)}</p>
-      <p>${echapperHtml(evt.date)} — ${evt.places} places</p>
+      <p>${echapperHtml(evt.date)}</p>
+      <p class="compteur"><strong>${inscrits} / ${evt.places}</strong> joueurs inscrits</p>
+      ${action}
       ${estProprietaire ? `<button class="btn-modifier" data-id="${evt.id}">Modifier</button>` : ''}
       ${estProprietaire ? `<button class="btn-supprimer" data-id="${evt.id}">Supprimer</button>` : ''}
     `;
     liste.appendChild(carte);
   });
 }
+
+
 
 // ===== Affichage selon l'état de connexion =====
 function miseAJourInterface() {
@@ -260,10 +282,32 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== Clics sur les cartes (Modifier / Supprimer) =====
-liste.addEventListener('click', (e) => {
-  const id = e.target.dataset.id;
+liste.addEventListener('click', async (e) => {
+   const id = e.target.dataset.id;
   if (!id) return;
 
+  if (e.target.classList.contains('btn-rejoindre') || e.target.classList.contains('btn-quitter')) {
+    if (e.target.disabled) return;
+
+    if (monId === null) {
+      sectionAuth.scrollIntoView({ behavior: 'smooth' });
+      erreurConnexion.textContent = 'Connectez-vous pour rejoindre une session.';
+      return;
+    }
+
+    e.target.disabled = true;
+    const r = e.target.classList.contains('btn-rejoindre')
+      ? await rejoindreSession(id)
+      : await quitterSession(id);
+
+    if (!r.ok) {
+      if (r.status === 401) return sessionExpiree();
+      alert((r.data && r.data.erreur) || "L'opération a échoué.");
+    }
+    await chargerEvenements();
+    afficherEvenements();
+    return;
+  }
   if (e.target.classList.contains('btn-supprimer')) {
     const evt = evenements.find(ev => ev.id === Number(id));
     if (!evt || evt.createurId !== monId) return;
