@@ -282,3 +282,20 @@ input:focus, select:focus {
 }
 .modal-contenu p { margin: 0 0 16px; font-size: 1.05rem; }
 .modal-contenu .card-actions { justify-content: center; }
+/* auth.css — styles propres à l'authentification (complète style.css) */
+.app-header {
+  display: flex;
+  align-items: center;
+}
+ 
+.user-zone {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+ 
+.user-zone.hidden {
+  display: none;
+}
+ 

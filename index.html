@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sparr — Sessions sportives</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
 </head>
 <body>
   <header class="app-header">
@@ -13,12 +13,56 @@
       <span class="brand-logo">⚡</span>
       <span class="brand-name">Sparr</span>
     </div>
+    <!-- Affiché uniquement quand l'utilisateur est connecté -->
+    <div id="zone-utilisateur" class="user-zone hidden">
+      <span>Connecté : <strong id="nom-utilisateur"></strong></span>
+      <button type="button" class="btn btn-ghost" id="btn-deconnexion">Se déconnecter</button>
+    </div>
   </header>
 
   <main class="app-main">
 
-    <!-- Formulaire de création / modification d'un événement -->
-    <section class="section">
+    <!-- Connexion / inscription (visible seulement si non connecté) -->
+    <section class="section" id="section-auth">
+      <h1 id="auth-titre">Connexion</h1>
+
+      <form id="form-connexion" class="form-card" novalidate>
+        <label>Email
+          <input type="email" id="conn-email" autocomplete="email" placeholder="vous@exemple.fr" />
+        </label>
+        <label>Mot de passe
+          <input type="password" id="conn-mdp" autocomplete="current-password" />
+        </label>
+        <div class="form-errors" id="err-connexion"></div>
+        <div class="card-actions">
+          <button type="submit" class="btn btn-primary">Se connecter</button>
+          <button type="button" class="btn btn-ghost" id="vers-inscription">Créer un compte</button>
+        </div>
+      </form>
+
+      <form id="form-inscription" class="form-card hidden" novalidate>
+        <label>Pseudo
+          <input type="text" id="ins-pseudo" autocomplete="username" />
+        </label>
+        <label>Email
+          <input type="email" id="ins-email" autocomplete="email" placeholder="vous@exemple.fr" />
+        </label>
+        <label>Mot de passe (8 caractères minimum)
+          <input type="password" id="ins-mdp" autocomplete="new-password" />
+        </label>
+        <label>Confirmer le mot de passe
+          <input type="password" id="ins-mdp2" autocomplete="new-password" />
+        </label>
+        <div class="form-errors" id="err-inscription"></div>
+        <div class="card-actions">
+          <button type="submit" class="btn btn-primary">S'inscrire</button>
+          <button type="button" class="btn btn-ghost" id="vers-connexion">J'ai déjà un compte</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Formulaire de création / modification d'un événement (connecté uniquement) -->
+    <section class="section hidden" id="section-creation">
       <h1 id="form-titre">Créer une session</h1>
       <form id="form-evenement" class="form-card" novalidate>
   <input type="hidden" id="evt-id" />
@@ -121,6 +165,8 @@
       bouton "Annuler" affiché uniquement en mode édition.
     - Une liste (#liste-evenements) où js/app.js injecte les cartes, chacune
       dotée de boutons Modifier et Supprimer.
+    - Une section connexion / inscription et une zone utilisateur dans l'en-tête
+      (le formulaire de création n'apparaît qu'une fois connecté).
     - Scripts chargés dans l'ordre validation -> events -> app.
   PLACE DANS LE PROJET : point d'entrée HTML reliant le CSS et les 3 scripts.
   ============================================================================
